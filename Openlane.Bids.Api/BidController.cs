@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Openlane.Bids.Shared;
 using Openlane.Bids.Shared.Dtos;
 using Openlane.Bids.Shared.Infrastructure.Database;
-using Openlane.Bids.Shared.Infrastructure.RabbitMq;
-using Openlane.Bids.Shared.Infrastructure.Redis;
-using System.Text.Json;
+using Openlane.Bids.Shared.Infrastructure.Services.Caches;
+using Openlane.Bids.Shared.Infrastructure.Services.Queues;
+using Openlane.Bids.Shared.Models;
 
 namespace Openlane.Bids.Api
 {
@@ -13,14 +12,14 @@ namespace Openlane.Bids.Api
     public class BidController : ControllerBase
     {
         private readonly ILogger<BidController> _logger;
-        private readonly IQueue _queue;
-        private readonly ICache _cache;
+        private readonly IQueueService<Shared.Models.Bid> _queue;
+        private readonly ICacheService _cache;
         private readonly IRepository _repository;
 
         public BidController(
             ILogger<BidController> logger, 
-            IQueue queue,
-            ICache cache,
+            IQueueService<Shared.Models.Bid> queue,
+            CacheService cache,
             IRepository repository)
         {
             _logger = logger;
@@ -30,21 +29,32 @@ namespace Openlane.Bids.Api
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostBid([FromBody] Bid bid)
+        public async Task<IActionResult> PostBid([FromBody] Shared.Dtos.Bid bid)
         {
-            bid.Id = Guid.NewGuid();
-            var bidJson = JsonSerializer.Serialize<Bid>(bid, BidJsonContext.Default.Bid);
+            if(!ModelState.IsValid) 
+            {
+                return BadRequest(ModelState);
+            }
 
-            await _queue.PublishAsync(bidJson);
-            _logger.LogInformation("Bid enqueued in RabbitMQ: {BidId}", bid.Id);
+            var bidModel = new Shared.Models.Bid()
+            {
+                Amount = bid.Amount,
+                AuctionId = bid.AuctionId,
+                BidderName = bid.BidderName,
+                CarId = bid.CarId,
+                Timestamp = bid.Timestamp,
+            };
+
+            await _queue.PublishAsync(bidModel);
+            _logger.LogInformation("Bid enqueued in RabbitMQ");
 
             return Accepted();
         }
 
         [HttpGet]
         public async Task<IActionResult> GetBids(
-            [FromQuery] Guid auctionId, 
-            [FromQuery] Guid cursor, 
+            [FromQuery] int auctionId, 
+            [FromQuery] int cursor, 
             [FromQuery] int pageSize = 10)
         {
             var cacheKey = $"bids:{auctionId}:{cursor}:{pageSize}";
@@ -58,7 +68,7 @@ namespace Openlane.Bids.Api
 
             var bids = await _repository.GetAsync(auctionId, pageSize, cursor);
 
-            Guid? nextCursor = bids.Count() == pageSize ? bids.Last().Id : null;
+            int? nextCursor = bids.Count() == pageSize ? bids.Last().Id : null;
 
             var response = new
             {

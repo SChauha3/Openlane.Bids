@@ -1,23 +1,15 @@
-using Openlane.Bids.Shared;
-using Openlane.Bids.Shared.Infrastructure.Database;
-using Openlane.Bids.Shared.Infrastructure.RabbitMq;
 using Openlane.Bids.WorkerService;
-using RabbitMQ.Client;
+using Openlane.Bids.Shared.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
 
+//Sql Server
+builder.Services.AddRepository();
 // RabbitMQ
-var factory = new ConnectionFactory() { HostName = "localhost:6379" };
-var connection = await factory.CreateConnectionAsync();
-var channel = connection.CreateChannelAsync();
-
-builder.Services.AddSingleton(channel);
-builder.Services.AddSingleton(BidJsonContext.Default);
-builder.Services.AddHealthChecks();
-builder.Services.AddSingleton<IQueue, Queue>();
-builder.Services.AddSingleton<IRepository, Repository>();
-
+await builder.Services.AddQueueService();
+//Redis Cache
+builder.Services.AddCacheService();
 
 var host = builder.Build();
 host.Run();

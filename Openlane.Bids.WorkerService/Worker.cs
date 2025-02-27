@@ -1,47 +1,40 @@
-using Openlane.Bids.Shared;
-using Openlane.Bids.Shared.Dtos;
 using Openlane.Bids.Shared.Infrastructure.Database;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System.Text;
-using System.Text.Json;
+using Openlane.Bids.Shared.Infrastructure.Services.Queues;
+using Openlane.Bids.Shared.Infrastructure.Services.Caches;
+using Openlane.Bids.Shared.Models;
 
 namespace Openlane.Bids.WorkerService
 {
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly IChannel _channel;
+        private readonly IQueueService<Bid> _queueService;
+        private readonly ICacheService _cacheService;
         private readonly IRepository _repository;
 
-        public Worker(ILogger<Worker> logger, IChannel channel)
+        public Worker(
+            ILogger<Worker> logger, 
+            IQueueService<Bid> queueService, 
+            ICacheService cacheService,
+            IRepository repository)
         {
             _logger = logger;
-            _channel = channel;
-            _channel.QueueDeclareAsync(queue: "bids-queue",
-                                  durable: false,
-                                  exclusive: false,
-                                  autoDelete: false,
-                                  arguments: null);
+            _queueService = queueService;
+            _cacheService = cacheService;
+            _repository = repository;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.ReceivedAsync += async (model, ea) =>
+            while (!stoppingToken.IsCancellationRequested)
             {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                var bid = JsonSerializer.Deserialize<Bid>(message, BidJsonContext.Default.Bid);
+                await _queueService.ConsumeAsync(ConsumerHandler);
+            }
+        }
 
-                if (bid != null)
-                {
-                    await _repository.SaveAsync(bid);
-                }
-            };
-
-            _channel.BasicConsumeAsync(queue: "bids", autoAck: true, consumer: consumer);
-            return Task.CompletedTask;
+        public void ConsumerHandler(Bid bid)
+        {
+            _repository.SaveAsync(bid);
         }
     }
 }

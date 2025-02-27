@@ -1,19 +1,20 @@
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using Serilog;
-using RabbitMQ.Client;
-using Openlane.Bids.Shared;
-using Openlane.Bids.Shared.Infrastructure.Database;
-using Openlane.Bids.Shared.Infrastructure.RabbitMq;
+using Openlane.Bids.Shared.Extensions;
+using Openlane.Bids.Api.Validators;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using Openlane.Bids.Serialization;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    options.SerializerOptions.TypeInfoResolverChain.Insert(0, BidJsonContext.Default);
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, BidDtoJsonContext.Default);
 });
 
-// Serilog configuration
+// Serilog configuration for structured logging
 Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -27,17 +28,28 @@ builder.Host.ConfigureLogging(logging =>
     logging.AddConsole();
 });
 
+builder.Services.AddValidatorsFromAssemblyContaining<BidValidator>();
+
+builder.Services
+    .AddControllers()
+    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<BidValidator>());
+
+// Register FluentValidation
+builder.Services.AddValidatorsFromAssemblyContaining<BidValidator>();
+
+// Add controllers and enable FluentValidation
 builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddHealthChecks();
-builder.Services.AddSingleton<IQueue, Queue>();
-builder.Services.AddSingleton<IRepository, Repository>();
 
+//Sql Server
+builder.Services.AddRepository();
 // RabbitMQ
-var factory = new ConnectionFactory() { HostName = "localhost:6379" };
-var connection = await factory.CreateConnectionAsync();
-var channel = connection.CreateChannelAsync();
+await builder.Services.AddQueueService();
+//Redis Cache
+builder.Services.AddCacheService();
 
 var app = builder.Build();
 

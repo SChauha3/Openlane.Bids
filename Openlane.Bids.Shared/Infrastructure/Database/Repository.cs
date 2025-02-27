@@ -1,7 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using Openlane.Bids.Api.Models;
-using Openlane.Bids.Shared.Dtos;
+using Openlane.Bids.Shared.Models;
 using System.Data;
 
 namespace Openlane.Bids.Shared.Infrastructure.Database
@@ -35,7 +34,7 @@ namespace Openlane.Bids.Shared.Infrastructure.Database
             _logger.LogInformation("Bid saved to SQL Server: {BidId}", bid.Id);
         }
 
-        public async Task<IEnumerable<Bid>> GetAsync(Guid auctionId, int pageSize, Guid cursor)
+        public async Task<IEnumerable<Bid>> GetAsync(int auctionId, int pageSize, int cursor)
         {
             var bids = new List<Bid>();
 
@@ -53,9 +52,9 @@ namespace Openlane.Bids.Shared.Infrastructure.Database
                     {
                         bids.Add(new Bid
                         {
-                            Id = reader.GetGuid("Id"),
-                            AuctionId = reader.GetGuid("AuctionId"),
-                            CarId = reader.GetGuid("CarId"),
+                            Id = reader.GetInt32("Id"),
+                            AuctionId = reader.GetInt32("AuctionId"),
+                            CarId = reader.GetInt32("CarId"),
                             Amount = reader.GetDecimal("Amount"),
                             Timestamp = reader.GetDateTime("Timestamp")
                         });

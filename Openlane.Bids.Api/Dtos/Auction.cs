@@ -1,8 +1,7 @@
-﻿namespace Openlane.Bids.Api.Models
+﻿namespace Openlane.Bids.Api.Dtos
 {
     public class Auction
     {
-        public Guid Id { get; set; }
         public Guid CarId { get; set; }
         public string ItemName { get; set; } = string.Empty;
         public string CarMake { get; set; } = string.Empty;
