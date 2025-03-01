@@ -3,7 +3,7 @@ Docker Desktop
 
 ##Infrastructure Set Up
 
-## Set up local redis and rabbimq
+## Set up containerized sql server, redis and rabbimq
 execute docker compose file to run redis and rabbimq in container using below command
 docker compose up -d
 
@@ -18,5 +18,13 @@ Redis: redis://localhost:6379
 ##  Connect using browser
 http://localhost:15672
 
-## SQL Server
-It can be downloaded from https://www.microsoft.com/en-us/sql-server/sql-server-downloads
+docker exec -it sqlserver "bash"
+/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P StrongP@ssw0rd123 -N -C
+
+CREATE DATABASE OpenlaneDb;
+GO
+
+USE OpenlaneDb;
+
+Create TABLE Bids(Id INT PRIMARY KEY IDENTITY(1,1), AuctionId INT NOT NULL, CarId INT NOT NULL, Amount DECIMAL NOT NULL,[Timestamp] DATETIME NOT NULL);
+

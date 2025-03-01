@@ -17,21 +17,24 @@ namespace Openlane.Bids.Shared.Infrastructure.Database
 
         public async Task SaveAsync(Bid bid)
         {
-            using var connection = new SqlConnection(_connectionString);
-            using var command = new SqlCommand("SaveBid", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
+                using var connection = new SqlConnection(_connectionString);
+                using var command = new SqlCommand("INSERT INTO [Bids] ([AuctionId], [CarId], [Amount], [Timestamp]) OUTPUT INSERTED.ID VALUES (@AuctionId, @CarId, @Amount, @Timestamp)", connection);
 
-            command.Parameters.AddWithValue("@Id", bid.Id);
-            command.Parameters.AddWithValue("@AuctionId", bid.AuctionId);
-            command.Parameters.AddWithValue("@CarId", bid.CarId);
-            command.Parameters.AddWithValue("@Amount", bid.Amount);
-            command.Parameters.AddWithValue("@Timestamp", bid.Timestamp);
+                command.Parameters.AddWithValue("@AuctionId", bid.AuctionId);
+                command.Parameters.AddWithValue("@CarId", bid.CarId);
+                command.Parameters.AddWithValue("@Amount", bid.Amount);
+                command.Parameters.AddWithValue("@Timestamp", bid.Timestamp);
 
-            await connection.OpenAsync();
-            await command.ExecuteNonQueryAsync();
-            _logger.LogInformation("Bid saved to SQL Server: {BidId}", bid.Id);
+                await connection.OpenAsync();
+                var generatedId = Convert.ToInt32(await command.ExecuteScalarAsync());
+                _logger.LogInformation("Bid saved : {BidId}", generatedId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+            }
         }
 
         public async Task<IEnumerable<Bid>> GetAsync(int auctionId, int pageSize, int cursor)

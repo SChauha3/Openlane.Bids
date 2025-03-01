@@ -2,16 +2,22 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using Serilog;
 using Openlane.Bids.Shared.Extensions;
-using Openlane.Bids.Api.Validators;
-using FluentValidation.AspNetCore;
-using FluentValidation;
-using Openlane.Bids.Serialization;
+//using Openlane.Bids.Api.Validators;
+//using FluentValidation;
+//using FluentValidation.AspNetCore;
+using System;
+using Serilog.Sinks.File;
+using Openlane.Bids.Shared.Models;
+using Openlane.Bids.Api;
+using Openlane.Bids;
+using System.Text.Json.Serialization.Metadata;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    options.SerializerOptions.TypeInfoResolverChain.Insert(0, BidDtoJsonContext.Default);
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, BidJsonContext.Default);
 });
 
 // Serilog configuration for structured logging
@@ -23,27 +29,14 @@ Log.Logger = new LoggerConfiguration()
                 .CreateLogger();
 
 builder.Logging.ClearProviders();
-builder.Host.ConfigureLogging(logging =>
-{
-    logging.AddConsole();
-});
+builder.Logging.AddConsole();
 
-builder.Services.AddValidatorsFromAssemblyContaining<BidValidator>();
-
-builder.Services
-    .AddControllers()
-    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<BidValidator>());
-
-// Register FluentValidation
-builder.Services.AddValidatorsFromAssemblyContaining<BidValidator>();
-
-// Add controllers and enable FluentValidation
-builder.Services.AddControllers();
-
+//builder.Services.AddScoped<IValidator<Bid>, BidValidator>();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddHealthChecks();
 
+builder.Services.AddTransient<BidController>();
 //Sql Server
 builder.Services.AddRepository();
 // RabbitMQ
@@ -52,5 +45,21 @@ await builder.Services.AddQueueService();
 builder.Services.AddCacheService();
 
 var app = builder.Build();
+
+var appMapGroup = app.MapGroup("/");
+appMapGroup.MapGet("/", () => { return "I'm available"; });
+
+appMapGroup.MapGet("api/bids", async (
+    BidController controller,
+    int auctionId,
+    int carId,
+    int cursor,
+    int pageSize = 10) =>
+{
+    await controller.GetBids(auctionId, carId, cursor, pageSize);
+});
+
+appMapGroup.MapPost("api/bids", (BidController controller, Bid bid) => controller.PostBid(bid));
+
 
 app.Run();

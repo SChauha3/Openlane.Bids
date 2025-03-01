@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using Openlane.Bids.Shared.Models;
 using RabbitMQ.Client;
@@ -26,8 +27,8 @@ namespace Openlane.Bids.Shared.Infrastructure.Services.Queues
 
                 var body = Encoding.UTF8.GetBytes(bidJson);
                 await _channel.BasicPublishAsync(
-                    exchange: "",
-                    routingKey: "",
+                    exchange: "openlane-bids",
+                    routingKey: "openlane.bid.creation",
                     mandatory: true,
                     body: body);
             }
@@ -48,7 +49,6 @@ namespace Openlane.Bids.Shared.Infrastructure.Services.Queues
         public async Task ConsumeAsync(Action<Bid> consumerHandler)
         {
             var consumer = new AsyncEventingBasicConsumer(_channel);
-            
             consumer.ReceivedAsync += async (model, ea) =>
             {
                 var body = ea.Body.ToArray();
@@ -73,6 +73,8 @@ namespace Openlane.Bids.Shared.Infrastructure.Services.Queues
                 // Acknowledge the message
                 await _channel.BasicAckAsync(ea.DeliveryTag, false);
             };
+
+            await _channel.BasicConsumeAsync(queue: "bids-queue", autoAck: false, consumer: consumer);
         }
     }
 }

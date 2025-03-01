@@ -15,7 +15,7 @@ namespace Openlane.Bids.Shared.Extensions
         {
             var factory = new ConnectionFactory
             {
-                HostName = "localhost", // Set hostname only
+                HostName = "rabbitmq", // Set hostname only
                 Port = 5672, // Default RabbitMQ port
                 UserName = "user", // Add username if needed
                 Password = "password" // Add password if needed
@@ -23,7 +23,11 @@ namespace Openlane.Bids.Shared.Extensions
             var connection = await factory.CreateConnectionAsync();
             var channel = await connection.CreateChannelAsync();
 
-            services.AddSingleton(sp =>
+            await channel.ExchangeDeclareAsync(exchange: "openlane-bids", type: "direct", durable:true);
+            await channel.QueueDeclareAsync(queue: "bids-queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
+            await channel.QueueBindAsync(queue: "bids-queue", exchange: "openlane-bids", routingKey: "openlane.bid.creation");
+
+            services.AddSingleton<IQueueService<Bid>>(sp =>
             {
                 var logger = sp.GetRequiredService<ILogger<IQueueService<Bid>>>();
                 return new QueueService(logger, channel);
@@ -34,12 +38,12 @@ namespace Openlane.Bids.Shared.Extensions
 
         public static IServiceCollection AddCacheService(this IServiceCollection services)
         {
-            var configuration = ConfigurationOptions.Parse("localhost:6379", true);
-            configuration.AbortOnConnectFail = true;
+            var configuration = ConfigurationOptions.Parse("redis://redis:6379", true);
+            configuration.AbortOnConnectFail = false;
             var connectionMultiplexer = ConnectionMultiplexer.Connect(configuration);
             var redisDatabase = connectionMultiplexer.GetDatabase();
 
-            services.AddSingleton(sp =>
+            services.AddSingleton<ICacheService>(sp =>
             {
                 var logger = sp.GetRequiredService<ILogger<ICacheService>>();
                 return new CacheService(logger, redisDatabase);
@@ -52,7 +56,7 @@ namespace Openlane.Bids.Shared.Extensions
             services.AddSingleton<IRepository>(sp =>
             {
                 var logger = sp.GetRequiredService<ILogger<Repository>>();
-                return new Repository(logger, "YourAdditionalParameter");
+                return new Repository(logger, "Server=sqlserver-db;Database=OpenlaneDb;User Id=sa;Password=StrongP@ssw0rd123;TrustServerCertificate=True;");
             });
 
             return services;

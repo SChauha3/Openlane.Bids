@@ -1,30 +1,86 @@
 version: '3.9'
 
 services:
-  # 🐇 RabbitMQ Service
-  rabbitmq:
-    image: rabbitmq:management
-    container_name: rabbitmq-server
+  # 🟢 .NET 8 API Service
+  openlane-bids-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+    container_name: openlane-bids-api
     ports:
-      - "5672:5672"       # AMQP port (for messaging)
-      - "15672:15672"     # Management UI
+      - "8080:8080" # Maps container's port 8081 to host's port 8081
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      RABBITMQ_URI: "amqp://user:password@rabbitmq:5672"
+      REDIS_CONNECTION: "redis:6379"
+    networks:
+      - mynetwork
+      
+  openlane-bids-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+      args:
+        BUILD_CONFIGURATION: Release
+    container_name: openlane-bids-worker
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      RABBITMQ_URI: "amqp://user:password@rabbitmq:5672"
+      REDIS_CONNECTION: "redis:6379"
+    networks:
+      - mynetwork
+
+  # 🟠 RabbitMQ Service
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # RabbitMQ management UI
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - mynetwork
 
-  # 📦 Redis Service
+  # 🔴 Redis Service
   redis:
-    image: redis:latest
-    container_name: redis-server
+    image: redis:alpine
+    container_name: redis
     ports:
-      - "6379:6379"       # Redis default port
+      - "6379:6379" # Redis default port
+    networks:
+      - mynetwork
+  
+  sqlserver:
+    container_name: sqlserver-db
+    hostname: sqlserver-db
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: 'StrongP@ssw0rd123'
+      MSSQL_DATA_DIR: /var/opt/mssql/data
+      MSSQL_PID: 'Developer' 
+      MSSQL_TCP_PORT: 1433 
+    ports: 
+      - "1433:1433"
     volumes:
-      - redis_data:/data
-    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+      - ./data:/var/opt/mssql/data
+      - ./log:/var/opt/mssql/log
+      - ./secrets:/var/opt/mssql/secrets
+    networks:
+      - mynetwork
 
-# 🔗 Named Volumes for Data Persistence
+# 📡 Network
+networks:
+  mynetwork:
+    driver: bridge
+    
 volumes:
-  rabbitmq_data:
-  redis_data:
+  sql_data:

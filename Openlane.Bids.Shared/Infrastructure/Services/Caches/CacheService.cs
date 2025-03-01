@@ -20,10 +20,15 @@ namespace Openlane.Bids.Shared.Infrastructure.Services.Caches
             await _database.StringSetAsync(key, JsonSerializer.Serialize(bids, BidJsonContext.Default.Bid), TimeSpan.FromMinutes(5));
         }
 
-        public async Task<Bid> GetCache(string key)
+        public async Task<IEnumerable<Bid>> GetCache(string key)
         {
             var cachedData = await _database.StringGetAsync(key);
-            return JsonSerializer.Deserialize<Bid>(cachedData, BidJsonContext.Default.Bid);
+            if (cachedData.HasValue)
+            {
+                return JsonSerializer.Deserialize(cachedData, BidJsonContext.Default.IEnumerableBid) ?? new List<Bid>();
+            }
+
+            return new List<Bid>();
         }
     }
 }

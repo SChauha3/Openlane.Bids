@@ -4,11 +4,9 @@ WORKDIR /src
 # 🌐 Set ASP.NET Core URL (Bind to all network interfaces)
 
 # 🚦 Expose Port
-Expose 443
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 
-# 📂 Copy & Restore
 # 📂 Copy all projects (to allow caching if csproj files don't change)
 COPY Openlane.Bids.Api/Openlane.Bids.Api.csproj Openlane.Bids.Api/
 COPY Openlane.Bids.Shared/Openlane.Bids.Shared.csproj Openlane.Bids.Shared/

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Openlane.Bids.Shared.Dtos;
 using Openlane.Bids.Shared.Infrastructure.Database;
 using Openlane.Bids.Shared.Infrastructure.Services.Caches;
 using Openlane.Bids.Shared.Infrastructure.Services.Queues;
@@ -7,9 +6,7 @@ using Openlane.Bids.Shared.Models;
 
 namespace Openlane.Bids.Api
 {
-    [ApiController]
-    [Route("api/bids")]
-    public class BidController : ControllerBase
+    public class BidController
     {
         private readonly ILogger<BidController> _logger;
         private readonly IQueueService<Shared.Models.Bid> _queue;
@@ -19,7 +16,7 @@ namespace Openlane.Bids.Api
         public BidController(
             ILogger<BidController> logger, 
             IQueueService<Shared.Models.Bid> queue,
-            CacheService cache,
+            ICacheService cache,
             IRepository repository)
         {
             _logger = logger;
@@ -28,13 +25,12 @@ namespace Openlane.Bids.Api
             _repository = repository;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PostBid([FromBody] Shared.Dtos.Bid bid)
+        public async Task PostBid(Bid bid)
         {
-            if(!ModelState.IsValid) 
-            {
-                return BadRequest(ModelState);
-            }
+            //if(!ModelState.IsValid) 
+            //{
+            //    return BadRequest(ModelState);
+            //}
 
             var bidModel = new Shared.Models.Bid()
             {
@@ -47,23 +43,21 @@ namespace Openlane.Bids.Api
 
             await _queue.PublishAsync(bidModel);
             _logger.LogInformation("Bid enqueued in RabbitMQ");
-
-            return Accepted();
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetBids(
-            [FromQuery] int auctionId, 
-            [FromQuery] int cursor, 
-            [FromQuery] int pageSize = 10)
+        public async Task<IEnumerable<Bid>> GetBids(
+            int auctionId,
+            int carId,
+            int cursor, 
+            int pageSize = 10)
         {
-            var cacheKey = $"bids:{auctionId}:{cursor}:{pageSize}";
+            var cacheKey = $"bids:{auctionId}:{carId}:{cursor}:{pageSize}";
             var cachedData = await _cache.GetCache(cacheKey);
 
-            if (cachedData != null)
+            if (cachedData.Any())
             {
                 _logger.LogInformation("Cache hit for {CacheKey}", cacheKey);
-                return Ok(cachedData);
+                return cachedData;
             }
 
             var bids = await _repository.GetAsync(auctionId, pageSize, cursor);
@@ -79,7 +73,7 @@ namespace Openlane.Bids.Api
             await _cache.SetCache(cacheKey, bids);
             _logger.LogInformation("Cache set for {CacheKey}", cacheKey);
 
-            return Ok(response);
+            return new List<Bid>();
         }
     }
 }

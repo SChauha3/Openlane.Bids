@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <InvariantGlobalization>false</InvariantGlobalization>
     <PublishAot>true</PublishAot>
     <UserSecretsId>dotnet-Openlane.Bid.WorkerService-349237dc-9aca-40a9-b3c8-c9e5c11aab20</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
