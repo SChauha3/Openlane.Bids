@@ -38,7 +38,13 @@ namespace Openlane.Bids.Shared.Extensions
 
         public static IServiceCollection AddCacheService(this IServiceCollection services)
         {
-            var configuration = ConfigurationOptions.Parse("redis://redis:6379", true);
+            var configuration = new ConfigurationOptions
+            {
+                EndPoints = { "redis:6379" },
+                Password = "Strong!Pass123",
+                ConnectTimeout = 5000,
+                AbortOnConnectFail = false
+            };
             configuration.AbortOnConnectFail = false;
             var connectionMultiplexer = ConnectionMultiplexer.Connect(configuration);
             var redisDatabase = connectionMultiplexer.GetDatabase();
@@ -57,6 +63,7 @@ namespace Openlane.Bids.Shared.Extensions
             {
                 var logger = sp.GetRequiredService<ILogger<Repository>>();
                 return new Repository(logger, "Server=sqlserver-db;Database=OpenlaneDb;User Id=sa;Password=StrongP@ssw0rd123;TrustServerCertificate=True;");
+                //return new Repository(logger, "Data Source=INDU-PC\\SQLEXPRESS;Initial Catalog=Openlane_Bids;Integrated Security=True;Encrypt=False");
             });
 
             return services;

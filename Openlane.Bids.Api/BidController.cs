@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Openlane.Bids.Shared.Infrastructure.Database;
+﻿using Openlane.Bids.Shared.Infrastructure.Database;
 using Openlane.Bids.Shared.Infrastructure.Services.Caches;
 using Openlane.Bids.Shared.Infrastructure.Services.Queues;
 using Openlane.Bids.Shared.Models;
@@ -25,55 +24,44 @@ namespace Openlane.Bids.Api
             _repository = repository;
         }
 
-        public async Task PostBid(Bid bid)
+        public async Task<Result<string>> PostBid(Bid bid)
         {
-            //if(!ModelState.IsValid) 
-            //{
-            //    return BadRequest(ModelState);
-            //}
-
-            var bidModel = new Shared.Models.Bid()
+            var correlationId = await _queue.PublishAsync(bid);
+            _logger.LogInformation("bid enqueued with {correlationId}", correlationId);
+            
+            if (string.IsNullOrEmpty(correlationId)) 
             {
-                Amount = bid.Amount,
-                AuctionId = bid.AuctionId,
-                BidderName = bid.BidderName,
-                CarId = bid.CarId,
-                Timestamp = bid.Timestamp,
-            };
+                return Result<string>.Failure("Could not be stored. Please try again later");
+            }
 
-            await _queue.PublishAsync(bidModel);
-            _logger.LogInformation("Bid enqueued in RabbitMQ");
+            return Result<string>.Success(correlationId);
         }
 
         public async Task<IEnumerable<Bid>> GetBids(
             int auctionId,
             int carId,
             int cursor, 
-            int pageSize = 10)
+            int pageSize)
         {
+            _logger.LogInformation("request received for {auctionId}, {carId}, {cursor}", auctionId, carId, cursor);
             var cacheKey = $"bids:{auctionId}:{carId}:{cursor}:{pageSize}";
             var cachedData = await _cache.GetCache(cacheKey);
 
             if (cachedData.Any())
             {
                 _logger.LogInformation("Cache hit for {CacheKey}", cacheKey);
+
                 return cachedData;
             }
 
-            var bids = await _repository.GetAsync(auctionId, pageSize, cursor);
+            var bids = await _repository.GetAsync(auctionId, carId, cursor, pageSize);
 
             int? nextCursor = bids.Count() == pageSize ? bids.Last().Id : null;
-
-            var response = new
-            {
-                Bids = bids,
-                NextCursor = nextCursor
-            };
 
             await _cache.SetCache(cacheKey, bids);
             _logger.LogInformation("Cache set for {CacheKey}", cacheKey);
 
-            return new List<Bid>();
+            return bids;
         }
     }
 }

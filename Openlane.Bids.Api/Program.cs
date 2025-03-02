@@ -12,12 +12,14 @@ using Openlane.Bids.Api;
 using Openlane.Bids;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, BidJsonContext.Default);
+    options.SerializerOptions.TypeInfoResolverChain.Insert(1, ResultJsonContext.Default);
 });
 
 // Serilog configuration for structured logging
@@ -36,7 +38,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddTransient<BidController>();
+builder.Services.AddScoped<BidController>();
 //Sql Server
 builder.Services.AddRepository();
 // RabbitMQ
@@ -47,19 +49,25 @@ builder.Services.AddCacheService();
 var app = builder.Build();
 
 var appMapGroup = app.MapGroup("/");
-appMapGroup.MapGet("/", () => { return "I'm available"; });
+appMapGroup.MapGet("/", () => { return "Hey, I'm available"; });
 
 appMapGroup.MapGet("api/bids", async (
-    BidController controller,
-    int auctionId,
-    int carId,
-    int cursor,
-    int pageSize = 10) =>
+    [FromServices] BidController controller,
+    [FromQuery] int auctionId,
+    [FromQuery] int carId,
+    [FromQuery] int cursor,
+    [FromQuery] int pageSize) =>
 {
-    await controller.GetBids(auctionId, carId, cursor, pageSize);
+    return await controller.GetBids(auctionId, carId, cursor, pageSize);
 });
 
-appMapGroup.MapPost("api/bids", (BidController controller, Bid bid) => controller.PostBid(bid));
+appMapGroup.MapPost("api/bids", (BidController controller, [FromBody] Bid bid) => controller.PostBid(bid));
 
 
 app.Run();
+
+
+[JsonSerializable(typeof(Result<string>))]
+internal partial class ResultJsonContext:JsonSerializerContext
+{
+}

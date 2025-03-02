@@ -2,7 +2,7 @@
 {
     public interface IQueueService<T>
     {
-        Task PublishAsync(T message);
-        Task ConsumeAsync(Action<T> consumerHandler);
+        Task<string> PublishAsync(T message);
+        Task ConsumeAsync(Func<T, Task> consumerHandlerAsync);
     }
 }

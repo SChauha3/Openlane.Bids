@@ -33,37 +33,43 @@ namespace Openlane.Bids.Shared.Infrastructure.Database
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message, ex);
+                _logger.LogError(ex, "Bid could not stored. It will be retied later.");
+                throw;
             }
         }
 
-        public async Task<IEnumerable<Bid>> GetAsync(int auctionId, int pageSize, int cursor)
+        public async Task<IEnumerable<Bid>> GetAsync(int auctionId, int carId, int cursor, int pageSize = 10)
         {
             var bids = new List<Bid>();
 
-            using (var connection = new SqlConnection(_connectionString))
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand("GetBid", connection)
             {
-                await connection.OpenAsync();
-                var command = new SqlCommand("GetBid", connection);
-                command.Parameters.AddWithValue("@AuctionId", auctionId);
-                command.Parameters.AddWithValue("@PageSize", pageSize);
-                command.Parameters.AddWithValue("@Cursor", (object)cursor ?? DBNull.Value);
+                CommandType = CommandType.StoredProcedure,
+            };
 
-                using (var reader = await command.ExecuteReaderAsync())
+            command.Parameters.AddWithValue("@AuctionId", auctionId);
+            command.Parameters.AddWithValue("@CarId", carId);
+            command.Parameters.AddWithValue("@Cursor", cursor);
+            command.Parameters.AddWithValue("@PageSize", pageSize);
+
+            await connection.OpenAsync();
+
+            using (var reader = await command.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
                 {
-                    while (await reader.ReadAsync())
+                    bids.Add(new Bid
                     {
-                        bids.Add(new Bid
-                        {
-                            Id = reader.GetInt32("Id"),
-                            AuctionId = reader.GetInt32("AuctionId"),
-                            CarId = reader.GetInt32("CarId"),
-                            Amount = reader.GetDecimal("Amount"),
-                            Timestamp = reader.GetDateTime("Timestamp")
-                        });
-                    }
+                        Id = reader.GetInt32("Id"),
+                        AuctionId = reader.GetInt32("AuctionId"),
+                        CarId = reader.GetInt32("CarId"),
+                        Amount = reader.GetDecimal("Amount"),
+                        Timestamp = reader.GetDateTime("Timestamp")
+                    });
                 }
             }
+
             return bids;
         }
     }

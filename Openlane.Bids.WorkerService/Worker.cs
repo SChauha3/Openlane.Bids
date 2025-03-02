@@ -26,15 +26,17 @@ namespace Openlane.Bids.WorkerService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("starting worker service");
+
             while (!stoppingToken.IsCancellationRequested)
             {
-                await _queueService.ConsumeAsync(ConsumerHandler);
+                await _queueService.ConsumeAsync(ConsumerHandlerAsync);
             }
         }
 
-        public void ConsumerHandler(Bid bid)
+        public async Task ConsumerHandlerAsync(Bid bid)
         {
-            _repository.SaveAsync(bid);
+            await _repository.SaveAsync(bid);
         }
     }
 }

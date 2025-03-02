@@ -5,7 +5,7 @@ services:
   openlane-bids-api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.api
       args:
         BUILD_CONFIGURATION: Release
     container_name: openlane-bids-api
@@ -38,7 +38,7 @@ services:
 
   # 🟠 RabbitMQ Service
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3.12-management
     container_name: rabbitmq
     ports:
       - "5672:5672"   # AMQP port
@@ -53,10 +53,14 @@ services:
   redis:
     image: redis:alpine
     container_name: redis
+    command: redis-server --requirepass Strong!Pass123
     ports:
-      - "6379:6379" # Redis default port
+      - "6379:6379"  # Expose Redis port
+    volumes:
+      - redis-data:/data  # Persistent Redis data storage
     networks:
       - mynetwork
+
   
   sqlserver:
     container_name: sqlserver-db
@@ -84,3 +88,4 @@ networks:
     
 volumes:
   sql_data:
+  redis-data:

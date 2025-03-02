@@ -34,5 +34,7 @@ FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+
 # 🎬 Run Native Executable (Ensure executable name is correct)
 ENTRYPOINT ["/app/Openlane.Bids.Api"]
