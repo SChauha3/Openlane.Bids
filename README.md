@@ -25,6 +25,7 @@ RabbitMQ: http://localhost:15672
 ##Api endpoints
 GET: http://localhost:8080/api/bids?auctionId=1&carId=1&cursor=10&pageSize=12
 POST: http://localhost:8080/api/bids
+```json
 payload: {
     "Amount": 400,
     "AuctionId":1,
@@ -32,6 +33,7 @@ payload: {
     "CarId": 1,
     "Timestamp": "2025-02-26T12:34:56Z"
 }
+```
 
 ## Setup dockerized database
 Open command prompt or shell client and run below commands:
