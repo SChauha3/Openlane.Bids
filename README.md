@@ -5,8 +5,7 @@ Worker service runs in background and fetcches the bids from queue and stores th
 ## Pre-requisite 
 Docker Desktop
 
-##Infrastructure Set Up
-
+# Infrastructure Setup
 ## Set up containerized sql server, redis and rabbimq
 execute docker compose file to run redis and rabbimq in container using below command
 docker compose up -d
@@ -26,7 +25,7 @@ RabbitMQ: http://localhost:15672
 GET: http://localhost:8080/api/bids?auctionId=1&carId=1&cursor=10&pageSize=12
 POST: http://localhost:8080/api/bids
 ```json
-payload: {
+{
     "Amount": 400,
     "AuctionId":1,
     "BidderName": "Sachin",
@@ -37,15 +36,17 @@ payload: {
 
 ## Setup dockerized database
 Open command prompt or shell client and run below commands:
-> docker exec -it sqlserver "bash"
-> /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P StrongP@ssw0rd123 -N -C
-> CREATE DATABASE OpenlaneDb;
-> GO
-> USE OpenlaneDb;
-> GO
-> Create TABLE Bids(Id INT PRIMARY KEY IDENTITY(1,1), AuctionId INT NOT NULL, CarId INT NOT NULL, Amount DECIMAL NOT NULL,[Timestamp] DATETIME NOT NULL); 
-> GO
-> CREATE INDEX IX_Bids_CarId_AuctionId ON Bids (CarId, AuctionId);
-> GO
-> CREATE PROCEDURE [dbo].[GetBid] @AuctionId INT, @CarId INT, @Cursor INT, @PageSize INT = 10 AS BEGIN SELECT TOP (@PageSize) * FROM Bids WHERE AuctionId = @AuctionId AND CarId = @CarId AND Id <= @Cursor ORDER BY Id Desc END;
-> GO
+```
+docker exec -it sqlserver "bash"
+/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P StrongP@ssw0rd123 -N -C
+CREATE DATABASE OpenlaneDb;
+GO
+USE OpenlaneDb;
+GO
+Create TABLE Bids(Id INT PRIMARY KEY IDENTITY(1,1), AuctionId INT NOT NULL, CarId INT NOT NULL, Amount DECIMAL NOT NULL,[Timestamp] DATETIME NOT NULL); 
+GO
+CREATE INDEX IX_Bids_CarId_AuctionId ON Bids (CarId, AuctionId);
+GO
+CREATE PROCEDURE [dbo].[GetBid] @AuctionId INT, @CarId INT, @Cursor INT, @PageSize INT = 10 AS BEGIN SELECT TOP (@PageSize) * FROM Bids WHERE AuctionId = @AuctionId AND CarId = @CarId AND Id <= @Cursor ORDER BY Id Desc END;
+GO
+```
