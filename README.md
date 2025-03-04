@@ -11,11 +11,11 @@ execute docker compose file to run redis and rabbimq in container using below co
 docker compose up -d
 
 ## Connect from other container
-RabbitMQ: amqp://user:password@rabbitmq:5672
+RabbitMQ: amqp://user:password@rabbitmq:5672  
 Redis: redis://redis:6379
 
 ## Connect from local machine
-RabbitMQ: localhost:5672
+RabbitMQ: localhost:5672  
 Redis: redis://localhost:6379
 
 ##  Connect using browser
