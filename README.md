@@ -1,5 +1,5 @@
-This repo has two hosting applications - Api (Openlane.Bids.Api) and Worker Service (Openlane.Bids.WorkerService) and one library which is Inftastructure code.
-Api has two functionalities, one is storing bids on rabbimq and 2nd is fetching bids from database and store them on cache for next retrieval.
+This repo has two hosting applications - Api (Openlane.Bids.Api) and Worker Service (Openlane.Bids.WorkerService) and one library which is Inftastructure code.  
+Api has two functionalities, one is storing bids on rabbimq and 2nd is fetching bids from database and store them on cache for next retrieval.  
 Worker service runs in background and fetcches the bids from queue and stores them on DB.
 
 ## Pre-requisite 
