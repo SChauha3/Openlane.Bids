@@ -21,9 +21,9 @@ Redis: redis://localhost:6379
 ##  Connect using browser
 RabbitMQ: http://localhost:15672
 
-##Api endpoints
-GET: http://localhost:8080/api/bids?auctionId=1&carId=1&cursor=10&pageSize=12
-POST: http://localhost:8080/api/bids
+## Api endpoints
+GET: http://localhost:8080/api/bids?auctionId=1&carId=1&cursor=10&pageSize=12 (http://localhost:8080/api/bids?auctionId=1&carId=1&cursor=10&pageSize=12)  
+POST: http://localhost:8080/api/bids (http://localhost:8080/api/bids)
 ```json
 {
     "Amount": 400,
