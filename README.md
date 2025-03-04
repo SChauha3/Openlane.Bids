@@ -8,7 +8,9 @@ Docker Desktop
 # Infrastructure Setup
 ## Set up containerized sql server, redis and rabbimq
 execute docker compose file to run redis and rabbimq in container using below command
+```
 docker compose up -d
+```
 
 ## Connect from other container
 RabbitMQ: amqp://user:password@rabbitmq:5672  
@@ -22,8 +24,8 @@ Redis: redis://localhost:6379
 RabbitMQ: http://localhost:15672
 
 ## Api endpoints
-GET: http://localhost:8080/api/bids?auctionId=1&carId=1&cursor=10&pageSize=12 (http://localhost:8080/api/bids?auctionId=1&carId=1&cursor=10&pageSize=12)  
-POST: http://localhost:8080/api/bids (http://localhost:8080/api/bids)
+GET: http://localhost:8080/api/bids?auctionId=1&carId=1&cursor=10&pageSize=12
+POST: http://localhost:8080/api/bids
 ```json
 {
     "Amount": 400,
