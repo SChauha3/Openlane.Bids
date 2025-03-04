@@ -9,8 +9,8 @@ RUN apt-get update \
 WORKDIR /src
 
 # Copy project files
-COPY ["Openlane.Bids.WorkerService/Openlane.Bids.WorkerService.csproj", "Openlane.Bids.WorkerService/"]
-COPY ["Openlane.Bids.Shared/Openlane.Bids.Shared.csproj", "Openlane.Bids.Shared/"]
+COPY ["./Openlane.Bids.WorkerService.csproj", "Openlane.Bids.WorkerService/"]
+COPY ["../Openlane.Bids.Shared/Openlane.Bids.Shared.csproj", "Openlane.Bids.Shared/"]
 
 # Restore dependencies
 RUN dotnet restore "Openlane.Bids.WorkerService/Openlane.Bids.WorkerService.csproj"

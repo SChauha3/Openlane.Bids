@@ -342,3 +342,7 @@ ASALocalRun/
 .terraform/
 builds/
 publish/
+
+secrets/
+log/
+data/

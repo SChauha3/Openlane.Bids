@@ -3,7 +3,8 @@ Api has two functionalities, one is storing bids on rabbimq and 2nd is fetching 
 Worker service runs in background and fetcches the bids from queue and stores them on DB.
 
 ## Pre-requisite 
-Docker Desktop
+Docker Desktop  
+Rest Client (for exmaple - Postman)
 
 # Infrastructure Setup
 ## Set up containerized sql server, redis and rabbimq
@@ -39,7 +40,7 @@ POST: http://localhost:8080/api/bids
 ## Setup dockerized database
 Open command prompt or shell client and run below commands:
 ```
-docker exec -it sqlserver "bash"
+docker exec -it sqlserver-db "bash"
 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P StrongP@ssw0rd123 -N -C
 CREATE DATABASE OpenlaneDb;
 GO
