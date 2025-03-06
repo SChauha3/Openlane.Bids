@@ -46,10 +46,13 @@ CREATE DATABASE OpenlaneDb;
 GO
 USE OpenlaneDb;
 GO
-Create TABLE Bids(Id INT PRIMARY KEY IDENTITY(1,1), TransactionId UNIQUEIDENTIFIER, AuctionId INT NOT NULL, CarId INT NOT NULL, Amount DECIMAL NOT NULL,[Timestamp] DATETIME NOT NULL); 
+Create TABLE Bids(Id INT PRIMARY KEY IDENTITY(1,1), TransactionId UNIQUEIDENTIFIER, AuctionId INT NOT NULL, BidderName NVARCHAR(100), CarId INT NOT NULL, Amount DECIMAL NOT NULL,[Timestamp] DATETIME NOT NULL);
 GO
 CREATE INDEX IX_Bids_CarId_AuctionId ON Bids (CarId, AuctionId);
 GO
 CREATE PROCEDURE [dbo].[GetBid] @AuctionId INT, @CarId INT, @Cursor INT, @PageSize INT = 10 AS BEGIN SELECT TOP (@PageSize) * FROM Bids WHERE AuctionId = @AuctionId AND CarId = @CarId AND Id <= @Cursor ORDER BY Id Desc END;
 GO
 ```
+
+Some imprvements are yet to be done. For example - reading from config, using dtos while returning the data etc.
+	

@@ -20,9 +20,10 @@ namespace Openlane.Bids.Shared.Infrastructure.Database
             try
             {
                 using var connection = new SqlConnection(_connectionString);
-                using var command = new SqlCommand("INSERT INTO [Bids] ([AuctionId], [CarId], [Amount], [Timestamp], [TransactionId]) OUTPUT INSERTED.ID VALUES (@AuctionId, @CarId, @Amount, @Timestamp, @TransactionId)", connection);
+                using var command = new SqlCommand("INSERT INTO [Bids] ([AuctionId], [BidderName], [CarId], [Amount], [Timestamp], [TransactionId]) OUTPUT INSERTED.ID VALUES (@AuctionId, @BidderName, @CarId, @Amount, @Timestamp, @TransactionId)", connection);
 
                 command.Parameters.AddWithValue("@AuctionId", bid.AuctionId);
+                command.Parameters.AddWithValue("@BidderName", bid.BidderName);
                 command.Parameters.AddWithValue("@CarId", bid.CarId);
                 command.Parameters.AddWithValue("@Amount", bid.Amount);
                 command.Parameters.AddWithValue("@Timestamp", bid.Timestamp);
@@ -65,6 +66,7 @@ namespace Openlane.Bids.Shared.Infrastructure.Database
                         Id = reader.GetInt32("Id"),
                         TransactionId = reader.GetGuid("TransactionId"),
                         AuctionId = reader.GetInt32("AuctionId"),
+                        BidderName = reader.IsDBNull(reader.GetOrdinal("BidderName")) ? string.Empty : reader.GetString("BidderName"),
                         CarId = reader.GetInt32("CarId"),
                         Amount = reader.GetDecimal("Amount"),
                         Timestamp = reader.GetDateTime("Timestamp")

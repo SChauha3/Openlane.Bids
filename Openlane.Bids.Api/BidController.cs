@@ -4,7 +4,6 @@ using Openlane.Bids.Shared.Infrastructure.Database;
 using Openlane.Bids.Shared.Infrastructure.Services.Caches;
 using Openlane.Bids.Shared.Infrastructure.Services.Queues;
 using Openlane.Bids.Shared.Models;
-using System.Collections;
 
 namespace Openlane.Bids.Api
 {
@@ -61,10 +60,10 @@ namespace Openlane.Bids.Api
             }
         }
 
-        public async Task<Result<IEnumerable<Bid>>> GetBids(
+        public async Task<Result<IEnumerable<CreatedBid>>> GetBids(
             int auctionId,
             int carId,
-            int cursor, 
+            int cursor,
             int pageSize)
         {
             _logger.LogInformation("request received for {auctionId}, {carId}, {cursor}", auctionId, carId, cursor);
@@ -76,20 +75,39 @@ namespace Openlane.Bids.Api
             {
                 _logger.LogInformation("Bids are fetched from cache {CacheKey}", cacheKey);
 
-                return Result<IEnumerable<Bid>>.Success(cachedData);
+                var bidDtos = MapModelToDto(cachedData);
+                return Result<IEnumerable<CreatedBid>>.Success(bidDtos);
             }
 
             var bids = await _repository.GetAsync(auctionId, carId, cursor, pageSize);
 
             if (!bids.Any())
             {
-                return Result<IEnumerable<Bid>>.Failure(ErrorType.NotFoundError, "Not found");
+                return Result<IEnumerable<CreatedBid>>.Failure(ErrorType.NotFoundError, "Not found");
             }
 
             await _cache.SetCache(cacheKey, bids);
             _logger.LogInformation("Cache set for {CacheKey}", cacheKey);
 
-            return Result<IEnumerable<Bid>>.Success(bids);
+            return Result<IEnumerable<CreatedBid>>.Success(MapModelToDto(bids));
+        }
+
+        private IEnumerable<CreatedBid> MapModelToDto(IEnumerable<Bid> bids)
+        {
+            var createdBids = new List<CreatedBid>();
+            foreach (var bid in bids)
+            {
+                createdBids.Add(
+                    new CreatedBid(
+                        Id: bid.Id,
+                        TransactionId: bid.TransactionId,
+                        AuctionId: bid.AuctionId,
+                        CarId: bid.CarId,
+                        BidderName: bid.BidderName,
+                        Amount: bid.Amount));
+            }
+
+            return createdBids;
         }
     }
 }
