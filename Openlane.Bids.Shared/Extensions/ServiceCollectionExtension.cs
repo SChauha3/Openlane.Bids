@@ -27,9 +27,9 @@ namespace Openlane.Bids.Shared.Extensions
             await channel.QueueDeclareAsync(queue: "bids-queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
             await channel.QueueBindAsync(queue: "bids-queue", exchange: "openlane-bids", routingKey: "openlane.bid.creation");
 
-            services.AddSingleton<IQueueService<Bid>>(sp =>
+            services.AddSingleton<IQueueService<BidEvent>>(sp =>
             {
-                var logger = sp.GetRequiredService<ILogger<IQueueService<Bid>>>();
+                var logger = sp.GetRequiredService<ILogger<IQueueService<BidEvent>>>();
                 return new QueueService(logger, channel);
             });
 

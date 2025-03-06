@@ -4,7 +4,8 @@ namespace Openlane.Bids.Shared.Models
 {
     public class Bid
     {
-        public int? Id { get; set; } = null;
+        public int Id { get; set; }
+        public Guid TransactionId { get; set; }
         public int AuctionId { get; set; }
         public int CarId { get; set; }
         public string BidderName { get; set; } = string.Empty;

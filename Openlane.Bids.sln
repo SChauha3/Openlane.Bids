@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Openlane.Bids.Shared", "Ope
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Openlane.Bids.WorkerService", "Openlane.Bids.WorkerService\Openlane.Bids.WorkerService.csproj", "{1007F0E8-7B98-4335-85F3-76A60616A976}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlScripts", "SqlScripts", "{B0986308-9CC0-4A57-A321-EEFF98B0C03C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

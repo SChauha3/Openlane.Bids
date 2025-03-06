@@ -8,13 +8,13 @@ namespace Openlane.Bids.WorkerService
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly IQueueService<Bid> _queueService;
+        private readonly IQueueService<BidEvent> _queueService;
         private readonly ICacheService _cacheService;
         private readonly IRepository _repository;
 
         public Worker(
             ILogger<Worker> logger, 
-            IQueueService<Bid> queueService, 
+            IQueueService<BidEvent> queueService, 
             ICacheService cacheService,
             IRepository repository)
         {
@@ -34,9 +34,18 @@ namespace Openlane.Bids.WorkerService
             }
         }
 
-        public async Task ConsumerHandlerAsync(Bid bid)
+        public async Task ConsumerHandlerAsync(BidEvent bid)
         {
-            await _repository.SaveAsync(bid);
+            var bidModel = new Bid()
+            {
+                Amount = bid.Amount,
+                AuctionId = bid.AuctionId,
+                BidderName = bid.BidderName,
+                CarId = bid.CarId,
+                Timestamp = DateTimeOffset.UtcNow,
+                TransactionId = bid.TransactionId,
+            };
+            await _repository.SaveAsync(bidModel);
         }
     }
 }

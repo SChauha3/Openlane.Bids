@@ -12,6 +12,7 @@ execute docker compose file to run redis and rabbimq in container using below co
 ```
 docker compose up -d
 ```
+Don't forget to start stopped containers manually.
 
 ## Connect from other container
 RabbitMQ: amqp://user:password@rabbitmq:5672  
@@ -32,8 +33,7 @@ POST: http://localhost:8080/api/bids
     "Amount": 400,
     "AuctionId":1,
     "BidderName": "Sachin",
-    "CarId": 1,
-    "Timestamp": "2025-02-26T12:34:56Z"
+    "CarId": 1
 }
 ```
 
@@ -46,7 +46,7 @@ CREATE DATABASE OpenlaneDb;
 GO
 USE OpenlaneDb;
 GO
-Create TABLE Bids(Id INT PRIMARY KEY IDENTITY(1,1), AuctionId INT NOT NULL, CarId INT NOT NULL, Amount DECIMAL NOT NULL,[Timestamp] DATETIME NOT NULL); 
+Create TABLE Bids(Id INT PRIMARY KEY IDENTITY(1,1), TransactionId UNIQUEIDENTIFIER, AuctionId INT NOT NULL, CarId INT NOT NULL, Amount DECIMAL NOT NULL,[Timestamp] DATETIME NOT NULL); 
 GO
 CREATE INDEX IX_Bids_CarId_AuctionId ON Bids (CarId, AuctionId);
 GO

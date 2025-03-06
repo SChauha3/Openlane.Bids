@@ -2,17 +2,15 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using Serilog;
 using Openlane.Bids.Shared.Extensions;
-//using Openlane.Bids.Api.Validators;
-//using FluentValidation;
-//using FluentValidation.AspNetCore;
-using System;
-using Serilog.Sinks.File;
-using Openlane.Bids.Shared.Models;
 using Openlane.Bids.Api;
 using Openlane.Bids;
-using System.Text.Json.Serialization.Metadata;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
+using Openlane.Bids.Api.Validators;
+using Openlane.Bids.Api.Dtos;
+using Azure;
+using Openlane.Bids.Shared.Models;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -33,10 +31,12 @@ Log.Logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
-//builder.Services.AddScoped<IValidator<Bid>, BidValidator>();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddHealthChecks();
+
+// builder.Services.AddValidatorsFromAssemblyContaining<CreateBidValidator>();
+builder.Services.AddScoped<IValidator<CreateBid>, CreateBidValidator>();
 
 builder.Services.AddScoped<BidController>();
 //Sql Server
@@ -58,16 +58,38 @@ appMapGroup.MapGet("api/bids", async (
     [FromQuery] int cursor,
     [FromQuery] int pageSize) =>
 {
-    return await controller.GetBids(auctionId, carId, cursor, pageSize);
+    var response = await controller.GetBids(auctionId, carId, cursor, pageSize);
+    if (response.IsSuccess)
+        return Results.Ok(response.Value);
+
+    return response.ErrorType switch
+    {
+        ErrorType.NotFoundError => Results.Problem(response.ErrorMessage, statusCode: StatusCodes.Status404NotFound),
+        _ => Results.Problem(response.ErrorMessage, statusCode: StatusCodes.Status500InternalServerError)
+    };
 });
 
-appMapGroup.MapPost("api/bids", (BidController controller, [FromBody] Bid bid) => controller.PostBid(bid));
+appMapGroup.MapPost("api/bids", async (BidController controller, [FromBody] CreateBid bid) =>
+{
+    var response = await controller.PostBidAsync(bid);
+    if (response.IsSuccess)
+        return Results.Ok(response);
+
+    return response.ErrorType switch
+    {
+        ErrorType.ValidationError => Results.Problem(response.ErrorMessage, statusCode: StatusCodes.Status400BadRequest),
+        _ => Results.Problem(response.ErrorMessage, statusCode: StatusCodes.Status500InternalServerError)
+    };
+});
 
 
 app.Run();
 
 
 [JsonSerializable(typeof(Result<string>))]
+[JsonSerializable(typeof(CreateBid))]
+[JsonSerializable(typeof(CreatedBid))]
+[JsonSerializable(typeof(ProblemDetails))]
 internal partial class ResultJsonContext:JsonSerializerContext
 {
 }

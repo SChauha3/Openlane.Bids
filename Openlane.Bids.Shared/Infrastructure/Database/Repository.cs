@@ -20,12 +20,13 @@ namespace Openlane.Bids.Shared.Infrastructure.Database
             try
             {
                 using var connection = new SqlConnection(_connectionString);
-                using var command = new SqlCommand("INSERT INTO [Bids] ([AuctionId], [CarId], [Amount], [Timestamp]) OUTPUT INSERTED.ID VALUES (@AuctionId, @CarId, @Amount, @Timestamp)", connection);
+                using var command = new SqlCommand("INSERT INTO [Bids] ([AuctionId], [CarId], [Amount], [Timestamp], [TransactionId]) OUTPUT INSERTED.ID VALUES (@AuctionId, @CarId, @Amount, @Timestamp, @TransactionId)", connection);
 
                 command.Parameters.AddWithValue("@AuctionId", bid.AuctionId);
                 command.Parameters.AddWithValue("@CarId", bid.CarId);
                 command.Parameters.AddWithValue("@Amount", bid.Amount);
                 command.Parameters.AddWithValue("@Timestamp", bid.Timestamp);
+                command.Parameters.AddWithValue("@TransactionId", bid.TransactionId);
 
                 await connection.OpenAsync();
                 var generatedId = Convert.ToInt32(await command.ExecuteScalarAsync());
@@ -62,6 +63,7 @@ namespace Openlane.Bids.Shared.Infrastructure.Database
                     bids.Add(new Bid
                     {
                         Id = reader.GetInt32("Id"),
+                        TransactionId = reader.GetGuid("TransactionId"),
                         AuctionId = reader.GetInt32("AuctionId"),
                         CarId = reader.GetInt32("CarId"),
                         Amount = reader.GetDecimal("Amount"),

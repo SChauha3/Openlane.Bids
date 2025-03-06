@@ -8,57 +8,48 @@ using RabbitMQ.Client.Exceptions;
 
 namespace Openlane.Bids.Shared.Infrastructure.Services.Queues
 {
-    public class QueueService : IQueueService<Bid>
+    public class QueueService : IQueueService<BidEvent>
     {
         private readonly IChannel _channel;
-        private readonly ILogger<IQueueService<Bid>> _logger;
-        public QueueService(ILogger<IQueueService<Bid>> logger, IChannel channel)
+        private readonly ILogger<IQueueService<BidEvent>> _logger;
+        public QueueService(ILogger<IQueueService<BidEvent>> logger, IChannel channel)
         {
             _logger = logger;
             _channel = channel;
         }
 
-        public async Task<string> PublishAsync(Bid bid)
+        public async Task PublishAsync(BidEvent bid)
         {
             string correlationId = string.Empty;
             try
             {
-                correlationId = Guid.NewGuid().ToString();
-                var props = new BasicProperties
-                {
-                    CorrelationId = correlationId,
-                };
-
-                var bidJson = JsonSerializer.Serialize(bid, BidJsonContext.Default.Bid);
+                var bidJson = JsonSerializer.Serialize(bid, BidJsonContext.Default.BidEvent);
 
                 var body = Encoding.UTF8.GetBytes(bidJson);
                 await _channel.BasicPublishAsync(
                     exchange: "openlane-bids",
                     routingKey: "openlane.bid.creation",
                     mandatory: true,
-                    basicProperties: props,
                     body: body);
             }
             catch (JsonException ex)
             {
                 _logger.LogError(ex, "bid with {AuctionId} and {carId} could not be serialized", bid.AuctionId, bid.CarId);
-                correlationId = string.Empty;
+                throw;
             }
             catch (PublishException ex)
             {
                 _logger.LogError(ex, "bid with {AuctionId} and {carId} could not be published", bid.AuctionId, bid.CarId);
-                correlationId = string.Empty;
+                throw;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred for your bid with {AuctionId} and {carId}", bid.AuctionId, bid.CarId);
-                correlationId = string.Empty;
+                throw;
             }
-
-            return correlationId;
         }
 
-        public async Task ConsumeAsync(Func<Bid, Task> ConsumerHandlerAsync)
+        public async Task ConsumeAsync(Func<BidEvent, Task> ConsumerHandlerAsync)
         {
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.ReceivedAsync += async (model, ea) =>
@@ -66,11 +57,11 @@ namespace Openlane.Bids.Shared.Infrastructure.Services.Queues
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
 
-                _logger.LogInformation("Received message for {crrelationId}: {Message}", ea.BasicProperties.CorrelationId, message);
+                _logger.LogInformation("Received event: {Message}", message);
 
                 try
                 {
-                    var bid = JsonSerializer.Deserialize<Bid>(message, BidJsonContext.Default.Bid);
+                    var bid = JsonSerializer.Deserialize<BidEvent>(message, BidJsonContext.Default.BidEvent);
 
                     await ConsumerHandlerAsync.Invoke(bid);
                 }
