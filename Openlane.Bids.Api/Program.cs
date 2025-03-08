@@ -80,6 +80,11 @@ app.MapRoutes();
 app.Use(async (context, next) =>
 {
     context.Response.ContentType = "application/json";
+    if (context.Request.Path == "/")
+    {
+        context.Response.Redirect("/swagger");
+        return;
+    }
     await next();
 });
 
