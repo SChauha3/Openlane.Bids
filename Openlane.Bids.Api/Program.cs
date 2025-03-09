@@ -12,6 +12,8 @@ using Openlane.Bids.Api.Dtos;
 using Openlane.Bids.Api.Endpoints;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.Extensions.Configuration;
+using Openlane.Bids.Shared.Infrastructure;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -26,16 +28,17 @@ builder.Services.Configure<RouteOptions>(options =>
     options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
 });
 
-// Serilog configuration for structured logging
-Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .Enrich.FromLogContext()
-                .WriteTo.Console(new RenderedCompactJsonFormatter())
-                .CreateLogger();
-
 builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
+
+var config = builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .Build();
+
+builder.Host.UseSerilog((context, services, config) =>
+{
+    config.ReadFrom.Configuration(builder.Configuration.GetSection("Serilog"));
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -58,6 +61,11 @@ builder.Services.AddHealthChecks();
 builder.Services.AddScoped<IValidator<CreateBid>, CreateBidValidator>();
 
 builder.Services.AddScoped<BidController>();
+
+//ServiceCollectionExtension.Initialize(
+//    config.GetSection("AppSettings:InfraSettings").Get<InfraSettings>() ?? 
+//    throw new ApplicationException("configuration is not valid"));
+
 //Sql Server
 builder.Services.AddRepository();
 // RabbitMQ
@@ -88,6 +96,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
+app.UseSerilogRequestLogging();
 app.Run();
 
 

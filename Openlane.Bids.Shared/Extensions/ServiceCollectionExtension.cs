@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Openlane.Bids.Shared.Infrastructure;
 using Openlane.Bids.Shared.Infrastructure.Database;
 using Openlane.Bids.Shared.Infrastructure.Services.Caches;
 using Openlane.Bids.Shared.Infrastructure.Services.Queues;
@@ -11,14 +12,19 @@ namespace Openlane.Bids.Shared.Extensions
 {
     public static class ServiceCollectionExtension
     {
+        //private static InfraSettings _infraSettings;
+        //public static void Initialize(InfraSettings infraSettings)
+        //{
+        //    _infraSettings = infraSettings;
+        //}
         public static async Task<IServiceCollection> AddQueueService(this IServiceCollection services)
         {
             var factory = new ConnectionFactory
             {
-                HostName = "rabbitmq", // Set hostname only
-                Port = 5672, // Default RabbitMQ port
-                UserName = "user", // Add username if needed
-                Password = "password" // Add password if needed
+                HostName = "rabbitmq", //_infraSettings.QueueSettings.HostName,
+                Port =  5672, //_infraSettings.QueueSettings.Port,
+                UserName = "user", //_infraSettings.QueueSettings.UserName, 
+                Password = "password" //_infraSettings.QueueSettings.Password
             };
             var connection = await factory.CreateConnectionAsync();
             var channel = await connection.CreateChannelAsync();
@@ -30,6 +36,7 @@ namespace Openlane.Bids.Shared.Extensions
             services.AddSingleton<IQueueService<BidEvent>>(sp =>
             {
                 var logger = sp.GetRequiredService<ILogger<IQueueService<BidEvent>>>();
+
                 return new QueueService(logger, channel);
             });
 
@@ -40,8 +47,8 @@ namespace Openlane.Bids.Shared.Extensions
         {
             var configuration = new ConfigurationOptions
             {
-                EndPoints = { "redis:6379" },
-                Password = "Strong!Pass123",
+                EndPoints = { "redis:6379" }, //{ _infraSettings.CacheSettings.Endpoints },
+                Password = "Strong!Pass123", //_infraSettings.CacheSettings.Password,
                 ConnectTimeout = 5000,
                 AbortOnConnectFail = false
             };
@@ -62,6 +69,7 @@ namespace Openlane.Bids.Shared.Extensions
             services.AddSingleton<IRepository>(sp =>
             {
                 var logger = sp.GetRequiredService<ILogger<Repository>>();
+                
                 return new Repository(logger, "Server=sqlserver-db;Database=OpenlaneDb;User Id=sa;Password=StrongP@ssw0rd123;TrustServerCertificate=True;");
                 //return new Repository(logger, "Data Source=INDU-PC\\SQLEXPRESS;Initial Catalog=Openlane_Bids;Integrated Security=True;Encrypt=False");
             });
