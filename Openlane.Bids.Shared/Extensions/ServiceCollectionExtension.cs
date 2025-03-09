@@ -12,11 +12,11 @@ namespace Openlane.Bids.Shared.Extensions
 {
     public static class ServiceCollectionExtension
     {
-        //private static InfraSettings _infraSettings;
-        //public static void Initialize(InfraSettings infraSettings)
-        //{
-        //    _infraSettings = infraSettings;
-        //}
+        private static InfraSettings _infraSettings;
+        public static void Initialize(InfraSettings infraSettings)
+        {
+            _infraSettings = infraSettings;
+        }
         public static async Task<IServiceCollection> AddQueueService(this IServiceCollection services)
         {
             var factory = new ConnectionFactory
