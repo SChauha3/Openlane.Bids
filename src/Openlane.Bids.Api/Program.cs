@@ -1,6 +1,4 @@
-﻿using Serilog.Events;
-using Serilog.Formatting.Compact;
-using Serilog;
+﻿using Serilog;
 using Openlane.Bids.Shared.Extensions;
 using Openlane.Bids.Api;
 using Openlane.Bids;
@@ -12,8 +10,6 @@ using Openlane.Bids.Api.Dtos;
 using Openlane.Bids.Api.Endpoints;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.Extensions.Configuration;
-using Openlane.Bids.Shared.Infrastructure;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -87,10 +83,9 @@ app.MapRoutes();
 
 app.Use(async (context, next) =>
 {
-    context.Response.ContentType = "application/json";
     if (context.Request.Path == "/")
     {
-        context.Response.Redirect("/swagger");
+        context.Response.Redirect("/swagger"); // or just "/"
         return;
     }
     await next();

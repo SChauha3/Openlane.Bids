@@ -5,7 +5,7 @@ services:
   openlane-bids-api:
     build:
       context: .
-      dockerfile: Openlane.Bids.Api/Dockerfile
+      dockerfile: src/Openlane.Bids.Api/Dockerfile
       args:
         BUILD_CONFIGURATION: Release
     container_name: openlane-bids-api
@@ -24,7 +24,7 @@ services:
   openlane-bids-worker:
     build:
       context: .
-      dockerfile: Openlane.Bids.WorkerService/Dockerfile
+      dockerfile: src/Openlane.Bids.WorkerService/Dockerfile
       args:
         BUILD_CONFIGURATION: Release
     container_name: openlane-bids-worker

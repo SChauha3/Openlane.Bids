@@ -21,10 +21,10 @@ namespace Openlane.Bids.Shared.Extensions
         {
             var factory = new ConnectionFactory
             {
-                HostName = "rabbitmq", //_infraSettings.QueueSettings.HostName,
-                Port =  5672, //_infraSettings.QueueSettings.Port,
-                UserName = "user", //_infraSettings.QueueSettings.UserName, 
-                Password = "password" //_infraSettings.QueueSettings.Password
+                HostName = "rabbitmq",
+                Port =  5672,
+                UserName = "user",
+                Password = "password"
             };
             var connection = await factory.CreateConnectionAsync();
             var channel = await connection.CreateChannelAsync();
@@ -47,8 +47,8 @@ namespace Openlane.Bids.Shared.Extensions
         {
             var configuration = new ConfigurationOptions
             {
-                EndPoints = { "redis:6379" }, //{ _infraSettings.CacheSettings.Endpoints },
-                Password = "Strong!Pass123", //_infraSettings.CacheSettings.Password,
+                EndPoints = { "redis:6379" },
+                Password = "Strong!Pass123",
                 ConnectTimeout = 5000,
                 AbortOnConnectFail = false
             };

@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Openlane.Bids.Api", "Openlane.Bids.Api\Openlane.Bids.Api.csproj", "{0C0DFB7C-DF88-4FE4-832D-E5E2C4E7C70D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Openlane.Bids.WorkerService", "src\Openlane.Bids.WorkerService\Openlane.Bids.WorkerService.csproj", "{D1151CCD-5044-4854-8178-621BDEE1536E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Openlane.Bids.Shared", "Openlane.Bids.Shared\Openlane.Bids.Shared.csproj", "{74FB6B40-AF30-4ADD-8D60-ED93F0AAFE06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Openlane.Bids.Api", "src\Openlane.Bids.Api\Openlane.Bids.Api.csproj", "{19BB31B4-9CEC-4ECA-B0A9-73855D2B715E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Openlane.Bids.WorkerService", "Openlane.Bids.WorkerService\Openlane.Bids.WorkerService.csproj", "{1007F0E8-7B98-4335-85F3-76A60616A976}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Openlane.Bids.Shared", "src\Openlane.Bids.Shared\Openlane.Bids.Shared.csproj", "{9A08BF39-4738-4016-984D-559E57CAAB25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,18 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0C0DFB7C-DF88-4FE4-832D-E5E2C4E7C70D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0C0DFB7C-DF88-4FE4-832D-E5E2C4E7C70D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0C0DFB7C-DF88-4FE4-832D-E5E2C4E7C70D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0C0DFB7C-DF88-4FE4-832D-E5E2C4E7C70D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{74FB6B40-AF30-4ADD-8D60-ED93F0AAFE06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{74FB6B40-AF30-4ADD-8D60-ED93F0AAFE06}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{74FB6B40-AF30-4ADD-8D60-ED93F0AAFE06}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{74FB6B40-AF30-4ADD-8D60-ED93F0AAFE06}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1007F0E8-7B98-4335-85F3-76A60616A976}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1007F0E8-7B98-4335-85F3-76A60616A976}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1007F0E8-7B98-4335-85F3-76A60616A976}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1007F0E8-7B98-4335-85F3-76A60616A976}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1151CCD-5044-4854-8178-621BDEE1536E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1151CCD-5044-4854-8178-621BDEE1536E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1151CCD-5044-4854-8178-621BDEE1536E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1151CCD-5044-4854-8178-621BDEE1536E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19BB31B4-9CEC-4ECA-B0A9-73855D2B715E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19BB31B4-9CEC-4ECA-B0A9-73855D2B715E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19BB31B4-9CEC-4ECA-B0A9-73855D2B715E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19BB31B4-9CEC-4ECA-B0A9-73855D2B715E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A08BF39-4738-4016-984D-559E57CAAB25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A08BF39-4738-4016-984D-559E57CAAB25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A08BF39-4738-4016-984D-559E57CAAB25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A08BF39-4738-4016-984D-559E57CAAB25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

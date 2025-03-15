@@ -1,23 +1,18 @@
 # 🌱 Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-# 🌐 Set ASP.NET Core URL (Bind to all network interfaces)
 
-# 🚦 Expose Port
-Expose 443
+# 🌐 Set ASP.NET Core URL (Bind to all network interfaces)
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 
-# 📂 Copy & Restore
-COPY Openlane.Bids.Api/Openlane.Bids.Api.csproj Openlane.Bids.Api/
-COPY Openlane.Bids.Shared/Openlane.Bids.Shared.csproj Openlane.Bids.Shared/
+# 📂 Copy all source code properly
+COPY src/Openlane.Bids.Api/ Openlane.Bids.Api/
+COPY src/Openlane.Bids.Shared/ Openlane.Bids.Shared/
 
 # 🚀 Restore project dependencies
-RUN dotnet restore Openlane.Bids.Api/Openlane.Bids.Api.csproj
-
-# 📦 Copy all source code
-COPY . .
-WORKDIR "/src/Openlane.Bids.Api"
+WORKDIR /src/Openlane.Bids.Api
+RUN dotnet restore Openlane.Bids.Api.csproj
 
 # 🛠️ Install Native AOT Prerequisites
 RUN apt-get update \
@@ -30,10 +25,10 @@ RUN dotnet publish "Openlane.Bids.Api.csproj" -c Release -o /app/publish \
     -p:PublishTrimmed=true \
     -p:StripSymbols=true
 
-# 🪶 Stage 2: Create Lightweight Native Image
+# 🪶 Stage 2: Runtime Image
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# 🎬 Run Native Executable (Ensure executable name is correct)
+# 🎬 Run Native Executable
 ENTRYPOINT ["/app/Openlane.Bids.Api"]
