@@ -78,18 +78,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//Map Routes
-app.MapRoutes();
-
 app.Use(async (context, next) =>
 {
-    if (context.Request.Path == "/")
+    if (context.Request.Path == "/" || context.Request.Path == "/index.html")
     {
-        context.Response.Redirect("/swagger"); // or just "/"
+        context.Response.Redirect("/swagger");
         return;
     }
     await next();
 });
+
+//Map Routes
+app.MapRoutes();
 
 app.UseSerilogRequestLogging();
 app.Run();
