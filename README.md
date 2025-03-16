@@ -25,15 +25,144 @@ Redis: redis://localhost:6379
 ##  Connect using browser
 RabbitMQ: http://localhost:15672
 
-## Api endpoints
-GET: http://localhost:8080/api/bids?auctionId=1&carId=1&cursor=10&pageSize=12  
-POST: http://localhost:8080/api/bids
+## Api Using Guidelines
 ```json
 {
-    "Amount": 400,
-    "AuctionId":1,
-    "BidderName": "Sachin",
-    "CarId": 1
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Minimal API with OpenAPI",
+    "description": "Bids Api",
+    "contact": {
+      "name": "sachin Chauhan",
+      "email": "sachinchauhan.cs1988@gmail.com"
+    },
+    "version": "v1"
+  },
+  "paths": {
+    "/api/bids": {
+      "get": {
+        "tags": [
+          "Openlane.Bids.Api"
+        ],
+        "parameters": [
+          {
+            "name": "auctionId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "carId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResultTask"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Openlane.Bids.Api"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBid"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResultTask"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateBid": {
+        "type": "object",
+        "properties": {
+          "auctionId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "carId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bidderName": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "IResult": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "IResultTask": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/IResult"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
 }
 ```
 
