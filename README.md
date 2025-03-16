@@ -53,6 +53,6 @@ GO
 CREATE PROCEDURE [dbo].[GetBid] @AuctionId INT, @CarId INT, @Cursor INT, @PageSize INT = 10 AS BEGIN SELECT TOP (@PageSize) * FROM Bids WHERE AuctionId = @AuctionId AND CarId = @CarId AND Id <= @Cursor ORDER BY Id Desc END;
 GO
 ```
-
-Some imprvements are yet to be done. For example - reading from config, using dtos while returning the data etc.
-	
+## Load Test Results
+![Bids API Screenshot](tests/load/results/load-test-get.jpg)
+![Bids API Screenshot](tests/load/results/load-test-post.jpg)
