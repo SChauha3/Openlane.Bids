@@ -10,6 +10,7 @@ using Openlane.Bids.Api.Dtos;
 using Openlane.Bids.Api.Endpoints;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Serilog.Events;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -24,17 +25,27 @@ builder.Services.Configure<RouteOptions>(options =>
     options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
 });
 
-builder.Logging.ClearProviders();
-
-var config = builder.Configuration
+builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .Build();
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
-builder.Host.UseSerilog((context, services, config) =>
+var logLevel = builder.Configuration.GetValue<string>("Serilog:MinimumLevel:Default") ?? "Information";
+if (!Enum.TryParse(logLevel, true, out LogEventLevel level))
 {
-    config.ReadFrom.Configuration(builder.Configuration.GetSection("Serilog"));
-});
+    level = LogEventLevel.Information;
+}
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Is(level) // Apply log level from config
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning) // Override for Microsoft logs
+    .MinimumLevel.Override("System", LogEventLevel.Warning)    // Override for System logs
+    .Enrich.FromLogContext()
+    .WriteTo.Console() // Console sink
+    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day) // File sink
+    .CreateLogger();
+
+builder.Logging.ClearProviders(); // Clear default logging
+builder.Host.UseSerilog(); // Use Serilog
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -57,10 +68,6 @@ builder.Services.AddHealthChecks();
 builder.Services.AddScoped<IValidator<CreateBid>, CreateBidValidator>();
 
 builder.Services.AddScoped<BidController>();
-
-//ServiceCollectionExtension.Initialize(
-//    config.GetSection("AppSettings:InfraSettings").Get<InfraSettings>() ?? 
-//    throw new ApplicationException("configuration is not valid"));
 
 //Sql Server
 builder.Services.AddRepository();
