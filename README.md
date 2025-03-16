@@ -25,6 +25,23 @@ Redis: redis://localhost:6379
 ##  Connect using browser
 RabbitMQ: http://localhost:15672
 
+## Setup dockerized database
+Open command prompt or shell client and run below commands:
+```
+docker exec -it sqlserver-db "bash"
+/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P StrongP@ssw0rd123 -N -C
+CREATE DATABASE OpenlaneDb;
+GO
+USE OpenlaneDb;
+GO
+Create TABLE Bids(Id INT PRIMARY KEY IDENTITY(1,1), TransactionId UNIQUEIDENTIFIER, AuctionId INT NOT NULL, BidderName NVARCHAR(100), CarId INT NOT NULL, Amount DECIMAL NOT NULL,[Timestamp] DATETIME NOT NULL);
+GO
+CREATE INDEX IX_Bids_CarId_AuctionId ON Bids (CarId, AuctionId);
+GO
+CREATE PROCEDURE [dbo].[GetBid] @AuctionId INT, @CarId INT, @Cursor INT, @PageSize INT = 10 AS BEGIN SELECT TOP (@PageSize) * FROM Bids WHERE AuctionId = @AuctionId AND CarId = @CarId AND Id <= @Cursor ORDER BY Id Desc END;
+GO
+```
+
 ## Api Using Guidelines
 ```json
 {
@@ -166,22 +183,6 @@ RabbitMQ: http://localhost:15672
 }
 ```
 
-## Setup dockerized database
-Open command prompt or shell client and run below commands:
-```
-docker exec -it sqlserver-db "bash"
-/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P StrongP@ssw0rd123 -N -C
-CREATE DATABASE OpenlaneDb;
-GO
-USE OpenlaneDb;
-GO
-Create TABLE Bids(Id INT PRIMARY KEY IDENTITY(1,1), TransactionId UNIQUEIDENTIFIER, AuctionId INT NOT NULL, BidderName NVARCHAR(100), CarId INT NOT NULL, Amount DECIMAL NOT NULL,[Timestamp] DATETIME NOT NULL);
-GO
-CREATE INDEX IX_Bids_CarId_AuctionId ON Bids (CarId, AuctionId);
-GO
-CREATE PROCEDURE [dbo].[GetBid] @AuctionId INT, @CarId INT, @Cursor INT, @PageSize INT = 10 AS BEGIN SELECT TOP (@PageSize) * FROM Bids WHERE AuctionId = @AuctionId AND CarId = @CarId AND Id <= @Cursor ORDER BY Id Desc END;
-GO
-```
 ## Load Test Results
 ![Bids API Screenshot](tests/load/results/load-test-get.jpg)
 ![Bids API Screenshot](tests/load/results/load-test-post.jpg)
